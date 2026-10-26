@@ -6,7 +6,9 @@ import sys
 binary = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "./ipis_logic").resolve()
 
 
-def run(text, *args):
+def run(text, *args, start=True):
+    if start and not args:
+        text = "1\n" + text
     result = subprocess.run(
         [str(binary), *args], input=text, capture_output=True, text=True, timeout=10
     )
@@ -48,3 +50,20 @@ assert "PLAYER 1 WINS!" in output
 assert "P2: HP 50 -> 35" in output
 assert "4 energy" in run("", "--rules")
 print("PASS: calculated guided demo and rules command")
+
+assert run("\n123\n\n430\nq\n") == run("\n1 2 3\n\n4 3 0\nq\n")
+output = run("\n12\n1234\n126\n1a3\n110\n251\n000\n\n000\nq\n")
+assert output.count("Enter exactly three numbers") == 4
+assert "same hand position cannot be used twice" in output
+assert "costs more than 4 energy" in output
+assert "P1: HP 50 -> 50" in output
+print("PASS: compact/spaced plan equivalence, empty slots and invalid compact plans")
+
+output = run("3\n", start=False)
+assert "How to play" in output and "PLANNING" not in output
+output = run("2\n\n3\n", start=False)
+assert "PLANNING" in output and output.count("1. Start match") == 2
+output = run("9\n1\nq\n", start=False)
+assert "Enter 1, 2 or 3" in output
+assert "PLANNING" not in output
+print("PASS: start, help/return, exit and invalid menu selection")

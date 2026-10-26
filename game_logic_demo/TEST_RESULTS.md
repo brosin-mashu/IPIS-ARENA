@@ -25,6 +25,10 @@ Engine checks passed:
 
 End-to-end input checks passed:
 
+- Start/help/exit menu, returning from help and invalid menu input.
+- Compact and spaced plans produce identical results; malformed compact plans,
+  repeated positions and excess energy are rejected; `000` passes correctly.
+
 - The exact two-round presentation sequence, including rejected selections,
   earning two AP, spending AP on Molt and updated HP.
 - Oversized lines, malformed numbers, extra numbers, quit and end-of-input.

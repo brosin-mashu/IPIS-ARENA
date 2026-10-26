@@ -24,7 +24,8 @@ static void show_rules(void) {
     puts("Ulti kagat              2    5 damage through any defense.");
     puts("\nSuccessful block/dodge: +1 AP (maximum 2).");
     puts("Molt: spend 2 AP before planning to replace one hand card.");
-    puts("Enter three HAND POSITIONS, e.g. 1 3 0. Zero leaves a slot empty.");
+    puts("\nPLANNING");
+    puts("Enter three hand positions: 130 or 1 3 0. Zero leaves a slot empty.");
     puts("A hand position can be used once per round; total cost must be <= 4.");
     puts("Both plans resolve together, one corresponding slot at a time.");
     puts("Played cards are discarded; unused cards stay. Refill to five.");
@@ -113,12 +114,64 @@ static int prompt(const char *label, char *line, int size) {
     return result;
 }
 
+static int parse_plan(const char *line, Plan *plan) {
+    int slot = 0;
+    while (*line) {
+        if (isspace((unsigned char)*line)) { line++; continue; }
+        if (*line < '0' || *line > '5' || slot == SLOTS) return 0;
+        plan->picks[slot++] = *line++ - '0';
+    }
+    return slot == SLOTS;
+}
+
+static int start_menu(void) {
+    char line[128];
+    int choice[1], result;
+    for (;;) {
+        puts("\nIPIS ARENA\n");
+        puts("1. Start match");
+        puts("2. How to play");
+        puts("3. Exit\n");
+        result = prompt("Choose 1-3: ", line, sizeof(line));
+        if (result == 0) return 0;
+        if (result < 0) continue;
+        if (!parse_numbers(line, choice, 1, 3) || choice[0] == 0) {
+            puts("Enter 1, 2 or 3.");
+            continue;
+        }
+        if (choice[0] == 3) return 0;
+        if (choice[0] == 1) {
+            puts("\nChoose up to 3 cards. You have 4 energy per round.");
+            puts("Reduce your opponent's HP to 0.");
+            puts("\nEnter 123 or 1 2 3. Use 0 for an empty slot.");
+            puts("Your choices stay hidden while typing. Press Enter to submit.");
+            puts("Type q to leave.\n");
+            return 1;
+        }
+        show_rules();
+        if (prompt("\nPress Enter to return to the menu: ", line, sizeof(line)) == 0)
+            return 0;
+    }
+}
+
+static const char *card_effect(int card) {
+    switch (card) {
+        case KAGAT: return "5 damage; cannot be dodged";
+        case LAYOG_KAGAT: return "10 damage; blockable/counterable";
+        case SAGANG: return "Blocks normal attacks";
+        case DULAG_SAPAK: return "Dodges Layog+Kagat; counters for 5";
+        case ULTI_KAGAT: return "5 damage; bypasses defense";
+        default: return "";
+    }
+}
+
 static void show_hand(const Player *player) {
     int i;
     puts("\nYour hand (choose positions, not card type numbers):");
     for (i = 0; i < player->hand_count; i++)
-        printf("  [%d] %-19s cost %d\n", i + 1,
-               card_name(player->hand[i]), card_cost(player->hand[i]));
+        printf("  [%d] %-19s cost %d | %s\n", i + 1,
+               card_name(player->hand[i]), card_cost(player->hand[i]),
+               card_effect(player->hand[i]));
 }
 
 static void clear_screen(void) {
@@ -145,6 +198,7 @@ static int collect_plan(Game *game, int p, Plan *plan) {
            game->players[0].hp, game->players[1].hp, player->ap);
     show_hand(player);
     if (player->ap == 2) {
+        puts("\nMolt is available: spend 2 AP to replace one card, or keep your AP.");
         for (;;) {
             result = prompt("Molt: position to replace, or 0 to keep hand: ", line, sizeof(line));
             if (result == 0) return 0;
@@ -164,10 +218,10 @@ static int collect_plan(Game *game, int p, Plan *plan) {
         }
     }
     for (;;) {
-        result = prompt("Three slots (example: 1 3 0): ", line, sizeof(line));
+        result = prompt("\nThree slots (123 or 1 2 3; 0 = empty): ", line, sizeof(line));
         if (result == 0) return 0;
         if (result < 0) continue;
-        if (!parse_numbers(line, plan->picks, SLOTS, HAND_SIZE)) {
+        if (!parse_plan(line, plan)) {
             puts("Enter exactly three numbers from 0 to 5.");
             continue;
         }
@@ -253,7 +307,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: %s [--demo | --rules]\n", argv[0]);
         return 1;
     }
-    show_rules();
+    if (!start_menu()) return 0;
     for (;;) {
         game_init(&game);
         while (game.outcome == ONGOING) {

@@ -28,8 +28,9 @@ Use interactive play as the main evidence that choices affect the match.
 
 ## Play
 
-1. Read the rules and hand. The other player looks away during planning.
-2. Enter three hand positions, such as `1 3 0`, then press Enter.
+1. Choose **1. Start match**, or **2. How to play** for the full rules.
+   Read your hand. The other player looks away during planning.
+2. Enter three hand positions, such as `130` or `1 3 0`, then press Enter.
 3. The numbers refer to the CURRENT hand positions, not fixed card IDs.
 4. `0` leaves that slot empty. You may pass with `0 0 0`.
 5. A hand position can be used once per plan. Different positions holding the

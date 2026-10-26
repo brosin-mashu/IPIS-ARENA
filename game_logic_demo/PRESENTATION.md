@@ -16,6 +16,9 @@ gcc -std=c11 -Wall -Wextra -Wpedantic main.c game.c -o ipis_logic
 ./ipis_logic
 ```
 
+Choose **1. Start match** from the opening menu. Use **2. How to play** if
+you want to show the full rules first. Sequences accept both `210` and `2 1 0`.
+
 The first hand for both players is always:
 
 | Position | Card | Energy |
