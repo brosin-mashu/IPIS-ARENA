@@ -1,4 +1,27 @@
-# IPIS Arena: first progress prototype
+# IPIS Arena
+
+## Current milestone: local game logic
+
+The playable combat demo is in [`game_logic_demo`](game_logic_demo/README.md).
+It runs in one terminal and calculates three-slot combat, five card types,
+energy, hands and decks, Adaptation Points, Molt, and match outcomes.
+
+```sh
+cd game_logic_demo
+gcc -std=c11 -Wall -Wextra -Wpedantic main.c game.c -o ipis_logic
+./ipis_logic
+```
+
+Run `./ipis_logic --demo` for a repeatable calculated match. Follow
+[`PRESENTATION.md`](game_logic_demo/PRESENTATION.md) for the live presentation.
+Build instructions, tests, pending networking integration and explicit demo
+rule decisions are documented in that folder. Windows checks passed; rehearse
+on Ubuntu before presenting.
+
+## Earlier socket prototype
+
+The root `server.c`, `client.c` and `socket_io.h` are the earlier one-round,
+two-client networking experiment. The instructions below describe that version.
 
 This is a separate project prototype based on the socket structure of your LE7
 chat program. Keep your original LE7 files for the laboratory submission.
