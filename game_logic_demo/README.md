@@ -40,12 +40,11 @@ Use interactive play as the main evidence that choices affect the match.
 8. Play continues with refilled hands until a win or draw. A completed match
    can be restarted from the prompt; `q` or end-of-input exits without a winner.
 
-At an interactive terminal, input is not echoed. Screen clearing separates
-planning phases but does not erase scrollback. This is an honor-based local
-demonstration, not secure private multiplayer. Redirected input remains usable
-for verification. On Ubuntu while hidden input is waiting, use `q` then Enter
-to quit; Ctrl+C may require Enter because terminal signals are temporarily
-disabled to prevent leaving echo turned off.
+Input is visible while typing, including menu choices and card sequences.
+Press Enter to submit. The planning screen clears after a valid plan is
+submitted, before the keyboard is passed to the other player. Screen clearing
+does not erase scrollback; the other player should look away during planning.
+This local demo relies on that agreement for privacy.
 
 ## Implemented from the proposal
 

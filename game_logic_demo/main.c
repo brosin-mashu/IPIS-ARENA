@@ -4,12 +4,10 @@
 #include <string.h>
 #include <ctype.h>
 #ifdef _WIN32
-#include <conio.h>
 #include <io.h>
 #define IS_TERMINAL() _isatty(_fileno(stdin))
 #else
 #include <unistd.h>
-#include <termios.h>
 #define IS_TERMINAL() isatty(STDIN_FILENO)
 #endif
 
@@ -32,46 +30,21 @@ static void show_rules(void) {
     puts("Demo policy: recycle discards in order when the draw deck is empty.");
     puts("All three slots resolve before checking a win or simultaneous KO.");
     puts("\nLocal play: pass the keyboard and look away during the other plan.");
-    puts("Plans are not echoed at an interactive terminal, but terminal history");
-    puts("and a shared screen are not secure multiplayer privacy.");
+    puts("Your input is visible. The screen clears after you submit your plan.");
     puts("Type q at any input to end the demo. No winner is awarded for quitting.");
 }
 
 /* Read and drain a complete line; oversized input is rejected, not split. */
 static int read_line(char *line, int size) {
     int ch, used = 0, overflow = 0;
-#ifdef _WIN32
-    int hidden = IS_TERMINAL();
-#else
-    struct termios old_settings, settings;
-    int hidden = IS_TERMINAL() && tcgetattr(STDIN_FILENO, &old_settings) == 0;
-    if (hidden) {
-        settings = old_settings;
-        /* Keep canonical editing. Disable terminal-generated signals while
-           echo is off so Ctrl+C cannot leave the terminal in a hidden state.
-           A literal Ctrl+C is handled below after settings are restored. */
-        settings.c_lflag &= (tcflag_t)~(ECHO | ISIG);
-        if (tcsetattr(STDIN_FILENO, TCSANOW, &settings) != 0) hidden = 0;
-    }
-#endif
+    /* Keep the terminal's normal echo and line editing enabled. */
     for (;;) {
-#ifdef _WIN32
-        ch = hidden ? _getch() : getchar();
-        if (hidden && (ch == 0 || ch == 224)) { (void)_getch(); continue; }
-        if (hidden && ch == '\b') { if (used > 0) used--; continue; }
-        if (hidden && ch == 3) { ch = EOF; break; }
-#else
         ch = getchar();
-#endif
         if (ch == EOF || ch == '\n' || ch == '\r') break;
         if (ch == 3 || ch == 4) { ch = EOF; break; }
         if (used < size - 1) line[used++] = (char)ch;
         else overflow = 1;
     }
-#ifndef _WIN32
-    if (hidden) tcsetattr(STDIN_FILENO, TCSANOW, &old_settings);
-#endif
-    if (hidden) putchar('\n');
     line[used] = '\0';
     if (ch == EOF) return 0;
     if (overflow) return -1;
@@ -144,7 +117,7 @@ static int start_menu(void) {
             puts("\nChoose up to 3 cards. You have 4 energy per round.");
             puts("Reduce your opponent's HP to 0.");
             puts("\nEnter 123 or 1 2 3. Use 0 for an empty slot.");
-            puts("Your choices stay hidden while typing. Press Enter to submit.");
+            puts("Your choices are visible while typing. Press Enter to submit.");
             puts("Type q to leave.\n");
             return 1;
         }

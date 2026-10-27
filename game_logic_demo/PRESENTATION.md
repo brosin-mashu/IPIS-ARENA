@@ -43,8 +43,8 @@ The first hand for both players is always:
    Layog+Kagat and Ulti both land. P1 ends at 40 HP, P2 at 35 HP; P2 has 0 AP.
 9. Type `q` at the next handoff to finish the interactive portion.
 
-Input is intentionally hidden while typing at an interactive terminal. Read
-the planned choices aloud to the professor during this demonstration.
+Input is visible while typing. The planning screen clears after submission.
+Ask the other player to look away while a plan is being entered.
 
 Then run the short repeatable match:
 
