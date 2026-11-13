@@ -2,25 +2,25 @@
 
 ## Current milestone: local game logic
 
-The playable combat demo is in [`game_logic_demo`](game_logic_demo/README.md).
+The playable combat demo is in [`game\_logic\_demo`](game_logic_demo/README.md).
 It runs in one terminal and calculates three-slot combat, five card types,
 energy, hands and decks, Adaptation Points, Molt, and match outcomes.
 
 ```sh
-cd game_logic_demo
-gcc -std=c11 -Wall -Wextra -Wpedantic main.c game.c -o ipis_logic
-./ipis_logic
+cd game\_logic\_demo
+gcc -std=c11 -Wall -Wextra -Wpedantic main.c game.c -o ipis\_logic
+./ipis\_logic
 ```
 
-Run `./ipis_logic --demo` for a repeatable calculated match. Follow
-[`PRESENTATION.md`](game_logic_demo/PRESENTATION.md) for the live presentation.
+Run `./ipis\_logic --demo` for a repeatable calculated match. 
+
 Build instructions, tests, pending networking integration and explicit demo
 rule decisions are documented in that folder. Windows checks passed; rehearse
 on Ubuntu before presenting.
 
 ## Earlier socket prototype
 
-The root `server.c`, `client.c` and `socket_io.h` are the earlier one-round,
+The root `server.c`, `client.c` and `socket\_io.h` are the earlier one-round,
 two-client networking experiment. The instructions below describe that version.
 
 This is a separate project prototype based on the socket structure of your LE7
@@ -28,15 +28,15 @@ chat program. Keep your original LE7 files for the laboratory submission.
 
 ## What this version does
 
-- One server accepts two clients and assigns Player 1 and Player 2.
-- The server starts the round with both players at 50 HP.
-- Each player privately submits one card: 1 for Kagat or 2 for Sagang.
-- Either player can submit first. The server locks each valid choice and waits
-  for both before revealing cards or calculating the result.
-- Invalid input prompts that player to try again without losing the other choice.
-- Both clients receive the same round result and updated HP.
-- A disconnect or `quit` ends the session and notifies the connected peer.
-- After one round, all programs exit. Restart them for another demonstration.
+* One server accepts two clients and assigns Player 1 and Player 2.
+* The server starts the round with both players at 50 HP.
+* Each player privately submits one card: 1 for Kagat or 2 for Sagang.
+* Either player can submit first. The server locks each valid choice and waits
+for both before revealing cards or calculating the result.
+* Invalid input prompts that player to try again without losing the other choice.
+* Both clients receive the same round result and updated HP.
+* A disconnect or `quit` ends the session and notifies the connected peer.
+* After one round, all programs exit. Restart them for another demonstration.
 
 This milestone uses only one card per player for one round. It does not yet
 implement the full approved game. Energy, three-slot sequences, hands, decks,
@@ -45,11 +45,11 @@ remain pending. Sagang's successful block does not award AP in this version.
 
 ## Files
 
-| File | Purpose |
-| --- | --- |
-| server.c | Accept two players, validate and lock choices, calculate HP, send results. |
-| client.c | Connect, display server messages, read and send the player's choice. |
-| socket_io.h | Shared socket definitions, complete sends, line-based receives, port checks. |
+|File|Purpose|
+|-|-|
+|server.c|Accept two players, validate and lock choices, calculate HP, send results.|
+|client.c|Connect, display server messages, read and send the player's choice.|
+|socket\_io.h|Shared socket definitions, complete sends, line-based receives, port checks.|
 
 The Linux code uses socket, bind, listen, accept, connect, select, send, recv,
 and close. A conditional Windows branch in the shared header permits local
@@ -57,14 +57,14 @@ testing on Windows. It is not needed when compiling on Linux.
 
 ## Compile on Linux
 
-Extract the archive, open a terminal in the `ipis_demo` folder, and run:
+Extract the archive, open a terminal in the `ipis\_demo` folder, and run:
 
 ```sh
 gcc -std=c11 -Wall -Wextra -Wpedantic server.c -o server
 gcc -std=c11 -Wall -Wextra -Wpedantic client.c -o client
 ```
 
-Keep socket_io.h beside both source files. It is included automatically.
+Keep socket\_io.h beside both source files. It is included automatically.
 
 ## Run in three Linux terminals
 
@@ -101,47 +101,19 @@ prompt; both players use the clients. Type `quit` at a client prompt to leave.
 2. Connect Player 2; both clients display the round and choices.
 3. Enter `9` in one client to demonstrate rejection and a retry.
 4. Submit `1` in Player 2 first. Show the waiting message and that Player 1 has
-   not received Player 2's card.
+not received Player 2's card.
 5. Submit `1` in Player 1. Both clients should show both players at 45 HP.
 6. Restart the programs and try Kagat against Sagang. Both remain at 50 HP.
 
-| Player 1 | Player 2 | P1 final HP | P2 final HP |
-| --- | --- | --- | --- |
-| Kagat | Kagat | 45 | 45 |
-| Kagat | Sagang | 50 | 50 |
-| Sagang | Kagat | 50 | 50 |
-| Sagang | Sagang | 50 | 50 |
+|Player 1|Player 2|P1 final HP|P2 final HP|
+|-|-|-|-|
+|Kagat|Kagat|45|45|
+|Kagat|Sagang|50|50|
+|Sagang|Kagat|50|50|
+|Sagang|Sagang|50|50|
 
 Sagang deals no damage. In this demonstration it blocks the opponent's Kagat
 in the single combat slot.
 
-## How it differs from LE7
+## 
 
-Your chat program accepted one client and alternated client/server messages.
-This server accepts twice while keeping the first connection open. It then
-uses select to watch both connections, so either player can submit first.
-
-Messages end in a newline because TCP is a byte stream: one send does not
-necessarily correspond to one recv. INPUT asks the client for terminal input;
-END ends the session. The server stores choices privately until both are valid.
-
-## Verification and limits
-
-Both C programs were compiled with MinGW on Windows using C11, Wall, Wextra,
-Wpedantic, and Werror. Actual C server/client socket tests covered all four
-card combinations with matching client results. Additional socket tests covered
-invalid and oversized input, a fragmented submission, choice locking, Player 2
-submitting first, privacy before resolution, and disconnect notification.
-
-Linux execution has not been verified here because WSL access was denied.
-Compile and run the three-terminal demonstration on your Linux environment
-before presenting. This prototype is progress evidence, not a guarantee of a
-particular completion percentage or grade.
-
-There is no turn timer or reconnect support. A client waiting for keyboard
-input reads server messages after the user submits or exits that prompt.
-Use Ctrl+C if needed to close a client stuck at its input prompt.
-
-For a progress report, describe this as a two-client networking prototype with
-one simplified combat round. Claim it works in your Linux environment only
-after you have run it there successfully.

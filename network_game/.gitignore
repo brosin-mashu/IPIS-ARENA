@@ -1,0 +1,5 @@
+server
+client
+test_game
+*.exe
+__pycache__/
