@@ -42,8 +42,9 @@ int main(int argc, char *argv[]) {
                     puts(remote.text + 5);
                 } else if (!strncmp(remote.text, "TURN ", 5) &&
                            parse_numbers(remote.text + 5, values, 3)) {
-                    if (values[0] < 1 || values[0] > DEMO_ROUNDS ||
-                        values[1] < 1 || values[1] > 2 || values[2] != TURN_SECONDS) break;
+                    if (values[0] < 1 ||
+			values[1] < 1 || values[1] > 2 ||
+			values[2] != TURN_SECONDS) break;
                     round = values[0];
                     keyboard_clear();
                     can_type = values[1] == 2;

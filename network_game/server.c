@@ -145,15 +145,21 @@ int main(int argc, char *argv[]) {
     Socket listener = NO_SOCKET, peer = NO_SOCKET;
     Game game;
     Line remote = {{0}, 0, 0};
-    int frame_round = 0, frame_allowed = 0, rounds = DEMO_ROUNDS, status = 1;
+    int frame_round = 0, frame_allowed = 0;
+    int rounds = 0;
+    int status = 1;
     char error[128];
+
     if ((argc != 2 && argc != 4) || !valid_port(argv[1])) {
         fprintf(stderr, "Usage: %s port [--rounds 1|2|3]\n", argv[0]);
         return 1;
     }
     if (argc == 4) {
         if (strcmp(argv[2], "--rounds") || strlen(argv[3]) != 1 ||
-            argv[3][0] < '1' || argv[3][0] > '3') return 1;
+            argv[3][0] < '1' || argv[3][0] > '3'){
+	fprintf(stderr, "Round limit must be 1, 2, or 3.\n"); 
+	return 1;
+}
         rounds = argv[3][0] - '0';
     }
     if (net_start() != 0) return 1;
@@ -170,7 +176,7 @@ int main(int argc, char *argv[]) {
     if (net_send(peer, "IPIS-DEMO 2\n") < 0) goto cancelled;
     puts("Player 2 connected.");
     game_init(&game);
-    while (game.outcome == ONGOING && game.round <= rounds) {
+    while (game.outcome == ONGOING && (rounds == 0 || game.round <= rounds)) {
         Planning drafts[2] = {{{{0, 0, 0}}, 0, 0}, {{{0, 0, 0}}, 0, 0}};
         Plan plans[2];
         RoundReport report;
@@ -184,18 +190,26 @@ int main(int argc, char *argv[]) {
         if (!game_resolve(&game, plans, &report, error, sizeof(error))) goto cancelled;
         if (show_report(peer, &game, &report, round) < 0) goto cancelled;
     }
-    {
-        const char *ending = "Round limit reached. No winner is declared.";
-        if (game.outcome == DRAW) ending = "Both players reached 0 HP: draw in this demo.";
-        if (game.outcome == PLAYER_ONE_WINS) ending = "Player 1 wins this demo.";
-        if (game.outcome == PLAYER_TWO_WINS) ending = "Player 2 wins this demo.";
-        puts(ending);
-        puts("demo round done");
-        if (net_info(peer, ending) < 0 || net_send(peer, "INFO demo round done\nDONE\n") < 0)
-            goto cancelled;
-    }
-    status = 0;
-    goto cleanup;
+
+{
+    const char *ending = "Round limit reached. No winner is declared.";
+
+    if (game.outcome == DRAW)
+        ending = "Both players reached 0 HP: draw.";
+    else if (game.outcome == PLAYER_ONE_WINS)
+        ending = "Player 1 wins!";
+    else if (game.outcome == PLAYER_TWO_WINS)
+        ending = "Player 2 wins!";
+
+    puts(ending);
+    puts("demo round done");
+
+    if (net_info(peer, ending) < 0 ||
+        net_send(peer, "INFO demo round done\nDONE\n") < 0)
+        goto cancelled;
+}
+status = 0;
+goto cleanup;
 cancelled:
     puts("Session cancelled: a player left or a connection failed. No winner awarded.");
     if (peer != NO_SOCKET) net_send(peer, "INFO Session cancelled. No winner awarded.\nABORT\n");
@@ -206,4 +220,5 @@ cleanup:
     net_stop();
     return status;
 }
+
 
